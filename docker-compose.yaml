@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  session-manager:
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - session-network
+    ports:
+      - "5000:5000"
+    environment:
+      - DOCKER_NETWORK=session-network
+
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - session-manager
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"  # Expose NGINX on port 80 (both Flask and noVNC requests)
+    networks:
+      - session-network
+
+networks:
+  session-network:
+    name: session-network
+    driver: bridge
+
+

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Session Manager</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userTable">
+        </tbody>
+    </table>
+
+    <script>
+        const users = JSON.parse('{{ users | safe }}');
+        let sessionStatus = {};
+
+        function updateButtonStates() {
+            users.forEach(userId => {
+                const goToSessionBtn = document.getElementById(`go-to-session-${userId}`);
+                const endSessionBtn = document.getElementById(`end-session-${userId}`);
+                const startAutomationBtn = document.getElementById(`start-automation-${userId}`);
+                const stopAutomationBtn = document.getElementById(`stop-automation-${userId}`);
+                
+                if (sessionStatus[userId] && sessionStatus[userId].session_active) {
+                    goToSessionBtn.disabled = false;
+                    endSessionBtn.disabled = false;
+                    if (sessionStatus[userId].automation_running) {
+                        startAutomationBtn.disabled = true;
+                        stopAutomationBtn.disabled = false;
+                    } else {
+                        startAutomationBtn.disabled = false;
+                        stopAutomationBtn.disabled = true;
+                    }
+                    
+                } else {
+                    goToSessionBtn.disabled = true;
+                    endSessionBtn.disabled = true;
+                    startAutomationBtn.disabled = true;
+                    stopAutomationBtn.disabled = true;
+                }
+            });
+        }
+
+        function fetchSessionStatus() {
+            fetch('/get_session_status')
+                .then(response => response.json())
+                .then(data => {
+                    sessionStatus = data;
+                    updateButtonStates();
+                })
+                .catch(error => console.error('Error fetching session status:', error));
+        }
+
+        function createSession(userId) {
+            const password = prompt(`Enter password for ${userId}:`);
+            if (!password) return;
+
+            fetch('/create_session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: userId, password: password }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    if (data.session_active) {
+                        alert(`Existing session resumed for ${userId}`);
+                    } else {
+                        alert(`New session created for ${userId}`);
+                    }
+                    sessionStatus[userId] = {
+                        session_active: true,
+                        automation_running: data.automation_running
+                    };
+                    updateButtonStates();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while creating/resuming the session.');
+            });
+        }
+
+        function endSession(userId) {
+            fetch(`/end_session/${userId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(`Session ended for ${userId}`);
+                    sessionStatus[userId] = false;
+                    updateButtonStates();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while ending the session.');
+            });
+        }
+
+        function goToSession(userId) {
+            fetch(`/get_vnc_url/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    window.open(data.vnc_url, '_blank');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while getting the VNC URL.');
+            });
+        }
+
+        function startAutomation(userId) {
+            fetch(`/start_automation/${userId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(`Automation started for ${userId}`);
+                    sessionStatus[userId].automation_running = true;
+                    updateButtonStates();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while starting the automation.');
+            });
+        }
+
+        function stopAutomation(userId) {
+            fetch(`/stop_automation/${userId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(`Automation stopped for ${userId}`);
+                    sessionStatus[userId].automation_running = false;
+                    updateButtonStates();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while stopping the automation.');
+            });
+        }
+
+
+
+        function populateUserTable() {
+            const userTable = document.getElementById('userTable');
+            users.forEach(userId => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${userId}</td>
+                    <td>
+                        <button onclick="createSession('${userId}')">Create Session</button>
+                        <button id="go-to-session-${userId}" onclick="goToSession('${userId}')" disabled>Go to Session</button>
+                        <button id="end-session-${userId}" onclick="endSession('${userId}')" disabled>End Session</button>
+                        <button id="start-automation-${userId}" onclick="startAutomation('${userId}')" disabled>Start Automation</button>
+                        <button id="stop-automation-${userId}" onclick="stopAutomation('${userId}')" disabled>Stop Automation</button>
+                    </td>
+                `;
+                userTable.appendChild(row);
+            });
+        }
+
+        populateUserTable();
+        fetchSessionStatus();  // Fetch initial session status when the page loads
+        setInterval(fetchSessionStatus, 5000);  // Refresh status every 5 seconds
+    </script>
+</body>
+</html>
