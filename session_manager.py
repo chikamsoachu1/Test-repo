@@ -13,10 +13,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, template_folder=os.path.abspath('templates'))
 client = docker.from_env()
 
-# Get the Docker network name from environment variable
+
 DOCKER_NETWORK = os.environ.get('DOCKER_NETWORK', 'session-network')
 
-# Create a port pool
 PORT_POOL_START = 7900
 PORT_POOL_SIZE = 100
 port_pool = list(range(PORT_POOL_START, PORT_POOL_START + PORT_POOL_SIZE))
@@ -27,7 +26,6 @@ users = {
     "user3": {"password": "pass3", "container_name": None, "vnc_port": None, "session_active": False, "automation_running": False, "stop_event": None},
 }
 
-# Assign a port to each user
 for i, (user_id, user_data) in enumerate(users.items()):
     users[user_id]['assigned_port'] = port_pool[i]
 
@@ -44,12 +42,9 @@ def create_chrome_container(user_id):
             logger.info(f"Starting existing container {container_name}")
             existing_container.start()
         
-        # Wait for the container to fully start
         time.sleep(2)
         
         existing_container.reload()
-        
-        # Get the VNC port
         vnc_port = existing_container.ports.get('7900/tcp')
         
         if not vnc_port:
@@ -81,12 +76,12 @@ def create_chrome_container(user_id):
                 "SCREEN_HEIGHT=1080",
             ],
             network=DOCKER_NETWORK,
-            ports={'7900/tcp': assigned_port},  # Use the assigned port
+            ports={'7900/tcp': assigned_port},  
             volumes={volume_name: {'bind': '/home/seluser/chrome-profile', 'mode': 'rw'}},
         )
         time.sleep(2)
         container = client.containers.get(container_name)
-        vnc_port = assigned_port  # Use the assigned port
+        vnc_port = assigned_port  
         container.exec_run("sudo chown -R seluser:seluser /home/seluser/chrome-profile")
         container.exec_run("chmod -R 700 /home/seluser/chrome-profile")
         container.exec_run("rm -rf /home/seluser/chrome-profile/SingletonLock")
