@@ -5,13 +5,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 import time
 from automation_script import AutomationScript
+import threading
 
 logger = logging.getLogger(__name__)
 
 
 class FieldNationAutomation(AutomationScript):
-    def __init__(self, user_id):
+    def __init__(self, user_id, custom_data):
         super().__init__("https://app.fieldnation.com", user_id)
+        self.custom_data = custom_data
 
     def require_authentication(self):
         return True
@@ -40,7 +42,22 @@ class FieldNationAutomation(AutomationScript):
             self.driver.get(self.website_url)
             time.sleep(10)
             
+            # Use custom data in the automation process
+            email = self.custom_data.get('email')
+            data = self.custom_data.get('data')
+            
+            logger.info(f"Running automation for user {self.user_id}")
+            logger.info(f"Using email: {email}")
+            logger.info(f"Using data: {data}")
+            
+            # Add your automation logic here, using the custom data as needed
+            
+            # For example:
+            # if email:
+            #     email_field = self.driver.find_element(By.ID, 'email-input')
+            #     email_field.send_keys(email)
+            
+            # if data:
+            #     # Use the 'data' in your automation process
+            #     pass
 
-
-
-        

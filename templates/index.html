@@ -26,6 +26,13 @@
         button {
             cursor: pointer;
         }
+        .custom-data-inputs {
+            margin-top: 10px;
+        }
+        .custom-data-inputs label {
+            display: inline-block;
+            width: 100px;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +50,7 @@
 
     <script>
         const users = JSON.parse('{{ users | safe }}');
+        const customDataFields = JSON.parse('{{ custom_data_fields | safe }}');
         let sessionStatus = {};
 
         function updateButtonStates() {
@@ -151,7 +159,21 @@
         }
 
         function startAutomation(userId) {
-            fetch(`/start_automation/${userId}`, { method: 'POST' })
+            const customData = {};
+            customDataFields.forEach(field => {
+                const inputElement = document.getElementById(`${field}-${userId}`);
+                if (inputElement) {
+                    customData[field] = inputElement.value;
+                }
+            });
+
+            fetch(`/start_automation/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ customData: customData }),
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -192,6 +214,15 @@
             const userTable = document.getElementById('userTable');
             users.forEach(userId => {
                 const row = document.createElement('tr');
+                let customDataInputs = '';
+                customDataFields.forEach(field => {
+                    customDataInputs += `
+                        <div class="custom-data-inputs">
+                            <label for="${field}-${userId}">${field}:</label>
+                            <input type="text" id="${field}-${userId}" name="${field}-${userId}">
+                        </div>
+                    `;
+                });
                 row.innerHTML = `
                     <td>${userId}</td>
                     <td>
@@ -200,6 +231,7 @@
                         <button id="end-session-${userId}" onclick="endSession('${userId}')" disabled>End Session</button>
                         <button id="start-automation-${userId}" onclick="startAutomation('${userId}')" disabled>Start Automation</button>
                         <button id="stop-automation-${userId}" onclick="stopAutomation('${userId}')" disabled>Stop Automation</button>
+                        ${customDataInputs}
                     </td>
                 `;
                 userTable.appendChild(row);

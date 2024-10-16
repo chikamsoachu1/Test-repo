@@ -7,6 +7,12 @@ import logging
 import json
 from selenium.common.exceptions import WebDriverException
 from fieldnation_script import FieldNationAutomation
+from typing import Dict, Any
+
+# Add these lines at the beginning of the file, after the imports
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    handlers=[logging.StreamHandler()])
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +25,12 @@ DOCKER_NETWORK = os.environ.get('DOCKER_NETWORK', 'session-network')
 PORT_POOL_START = 7900
 PORT_POOL_SIZE = 100
 port_pool = list(range(PORT_POOL_START, PORT_POOL_START + PORT_POOL_SIZE))
+
+customData: Dict[str, Dict[str, Any]] = {
+    "user1": {"email": None, "data": None, "automation": None},
+    "user2": {"email": None, "data": None, "automation": None},
+    "user3": {"email": None, "data": None, "automation": None},
+}
 
 users = {
     "user1": {"password": "pass1", "container_name": None, "vnc_port": None, "session_active": False, "automation_running": False, "stop_event": None},
@@ -100,7 +112,7 @@ def start_automation(user_id):
         stop_event = threading.Event()
         users[user_id]['stop_event'] = stop_event
         users[user_id]['automation_running'] = True
-        field_nation_script = FieldNationAutomation(user_id)
+        field_nation_script = FieldNationAutomation(user_id, customData[user_id])
         field_nation_script.run(stop_event)
     except WebDriverException as e:
         logger.error(f"WebDriver error for {user_id}: {str(e)}")
@@ -114,7 +126,8 @@ def start_automation(user_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html', users=json.dumps(list(users.keys())))
+    custom_data_fields = list(next(iter(customData.values())).keys())
+    return render_template('index.html', users=json.dumps(list(users.keys())), custom_data_fields=json.dumps(custom_data_fields))
 
 @app.route('/get_session_status', methods=['GET'])
 def get_session_status():
@@ -155,6 +168,12 @@ def start_automation_route(user_id):
     
     if users[user_id]['automation_running']:
         return jsonify({"error": "Automation is already running"}), 400
+    
+    # Get custom data from request
+    custom_data = request.json.get('customData', {})
+    
+    # Update customData for the user
+    customData[user_id].update(custom_data)
     
     users[user_id]['automation_running'] = True
     threading.Thread(target=start_automation, args=(user_id,)).start()
@@ -218,6 +237,12 @@ def get_vnc_url(user_id):
     
     vnc_port = users[user_id]['vnc_port']
     return jsonify({"vnc_url": f"http://localhost:{vnc_port}"})
+
+@app.route('/get_custom_data_fields', methods=['GET'])
+def get_custom_data_fields():
+    # Assuming all users have the same custom data fields
+    sample_user = next(iter(customData.values()))
+    return jsonify(list(sample_user.keys()))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
