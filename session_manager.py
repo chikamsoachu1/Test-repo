@@ -8,6 +8,12 @@ import json
 from selenium.common.exceptions import WebDriverException
 from fieldnation_script import FieldNationAutomation
 from typing import Dict, Any
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+HOST_IP = os.getenv('HOST_IP') or 'localhost'
 
 # Add these lines at the beginning of the file, after the imports
 logging.basicConfig(level=logging.INFO,
@@ -150,7 +156,7 @@ def create_session():
     
     return jsonify({
         'user_id': user_id,
-        'vnc_url': f'http://localhost:{users[user_id]["assigned_port"]}',
+        'vnc_url': f'http://{HOST_IP}:{users[user_id]["assigned_port"]}',
         'container_name': users[user_id]['container_name'],
         'session_active': users[user_id]['session_active'],
         'automation_running': users[user_id]['automation_running']
@@ -236,7 +242,7 @@ def get_vnc_url(user_id):
         return jsonify({"error": "No active session found"}), 400
     
     vnc_port = users[user_id]['vnc_port']
-    return jsonify({"vnc_url": f"http://localhost:{vnc_port}"})
+    return jsonify({"vnc_url": f"http://{HOST_IP}:{vnc_port}"})
 
 @app.route('/get_custom_data_fields', methods=['GET'])
 def get_custom_data_fields():

@@ -50,8 +50,15 @@ Users can input basic custom data through the web interface. This data is passed
 1. Ensure Docker and Docker Compose are installed on your system.
 2. Clone this repository.
 3. Navigate to the project directory.
-4. Run `docker-compose up --build` to start the services.
-5. Access the web interface at `http://localhost`.
+4. Copy the `.env.example` file to `.env`:  
+   ```
+   cp .env.example .env
+   ```
+5. Edit the `.env` file and set the `HOST_IP` variable:
+   - If running on a remote server, set it to the server's public IP address.
+   - If running locally, set it to `localhost`.
+6. Run `docker-compose up --build` to start the services.
+7. Access the web interface at `http://localhost` or `http://<your-server-ip>`.
 
 
 ## Automation Script Documentation

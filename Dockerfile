@@ -9,5 +9,6 @@ COPY session_manager.py .
 COPY automation_script.py .
 COPY fieldnation_script.py .
 COPY templates ./templates
+COPY .env .
 
 CMD ["python", "session_manager.py"]
