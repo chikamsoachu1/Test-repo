@@ -149,9 +149,10 @@ class FieldNationAutomation(AutomationScript):
         client = pymongo.MongoClient(mongo_uri)
         db = client[db_name]
         collection = db[collection_name]
+        self.driver.get(self.website_url)
         while True:
-            self.driver.get(self.website_url)
-            time.sleep(10)
+            
+            
             
             # Use custom data in the automation process
             email = self.custom_data.get('email')
