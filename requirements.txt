@@ -2,3 +2,4 @@ flask
 docker
 selenium
 python-dotenv
+pymongo
