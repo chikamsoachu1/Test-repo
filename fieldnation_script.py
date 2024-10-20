@@ -176,7 +176,7 @@ class FieldNationAutomation(AutomationScript):
                 {'_id': document['_id']},
                 {'$set': {'used': True}}
             )
-            print(f"Marked link as used: {link}"
+            print(f"Marked link as used: {link}")
         
 
 
