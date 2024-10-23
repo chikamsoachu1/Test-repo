@@ -197,7 +197,8 @@ class FieldNationAutomation(AutomationScript):
             logger.info(f"Running automation for user {self.user_id}")
             logger.info(f"Using email: {email}")
             
-            
+            logger.info(f"Using rate: {rate}")
+            logger.info(f"Using ratio: {ratio}")
             # Add your automation logic here, using the custom data as needed
             
             # For example:
