@@ -44,11 +44,11 @@ def fixedpay(pay):
         pay = pay.replace(",", "")  # Remove commas
         return float(pay)
     return None
-def applytojobs(link,distance,payrate,paytotal,driverr):
+def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     c_totalpay=200
-    c_payrate=45
+    c_payrate=in_rate
     c_distance=25
-    c_pay_dist_ratio=8.5
+    c_pay_dist_ratio=in_ratio
     pay_dist_ratio=paytotal/distance
     driver=driverr
 
@@ -156,7 +156,8 @@ class FieldNationAutomation(AutomationScript):
             
             # Use custom data in the automation process
             email = self.custom_data.get('email')
-            data = self.custom_data.get('data')
+            rate = self.custom_data.get('data')
+            ratio = self.custom_data.get('automation')
 
 
 
@@ -169,14 +170,14 @@ class FieldNationAutomation(AutomationScript):
                 paytotal=document['paytotal']
                 
                 print(f"Processing link: {link}")
-                applytojobs(link,distance,payrate,paytotal,self.driver)
+                applytojobs(link,distance,payrate,paytotal,self.driver,rate,ratio)
 
             # Mark the link as used
-            self.collection.update_one(
-                {'_id': document['_id']},
-                {'$set': {'used': True}}
-            )
-            print(f"Marked link as used: {link}")
+                collection.update_one(
+                    {'_id': document['_id']},
+                    {'$set': {'used': True}}
+                )
+                print(f"Marked link as used: {link}")
         
 
 
