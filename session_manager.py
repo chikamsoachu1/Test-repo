@@ -92,6 +92,7 @@ def create_chrome_container(user_id):
                 f"VNC_PASSWORD={users[user_id]['password']}",
                 "SCREEN_WIDTH=1920",
                 "SCREEN_HEIGHT=1080",
+                "SE_NODE_SESSION_TIMEOUT=260000"
             ],
             network=DOCKER_NETWORK,
             ports={'7900/tcp': assigned_port},  
