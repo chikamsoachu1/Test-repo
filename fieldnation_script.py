@@ -151,9 +151,16 @@ class FieldNationAutomation(AutomationScript):
             return False
 
     def automation_process(self):
+        # Use custom data in the automation process
+        email = self.custom_data.get('email')
+        rate = self.custom_data.get('data')
+        ratio = self.custom_data.get('automation')
+
+        
+        
         mongo_uri = "mongodb+srv://fiverrtest1012:A5zOSyMdUT1Ay5bs@cluster0.aeo5n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         db_name = "gmail"  # Replace with your database name
-        collection_name = "links"
+        collection_name = email
         client = pymongo.MongoClient(mongo_uri)
         db = client[db_name]
         collection = db[collection_name]
@@ -162,11 +169,7 @@ class FieldNationAutomation(AutomationScript):
             
             
             
-            # Use custom data in the automation process
-            email = self.custom_data.get('email')
-            rate = self.custom_data.get('data')
-            ratio = self.custom_data.get('automation')
-
+            
 
 
             unprocessed_links = collection.find({'used': False})
@@ -193,7 +196,7 @@ class FieldNationAutomation(AutomationScript):
             
             logger.info(f"Running automation for user {self.user_id}")
             logger.info(f"Using email: {email}")
-            logger.info(f"Using data: {data}")
+            
             
             # Add your automation logic here, using the custom data as needed
             
