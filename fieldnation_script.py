@@ -10,6 +10,14 @@ import pymongo
 from selenium.webdriver.common.action_chains import ActionChains
 import re
 
+def stonum(value):
+    try:
+        return int(value)
+    except ValueError:
+        try:
+            return float(value)
+        except ValueError:
+            return None
 def wait_for_element_to_be_visible(driver, locator, timeout=60):
     try:
         element = WebDriverWait(driver, timeout).until(
@@ -46,9 +54,9 @@ def fixedpay(pay):
     return None
 def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     c_totalpay=200
-    c_payrate=in_rate
+    c_payrate=stonum(in_rate)
     c_distance=25
-    c_pay_dist_ratio=in_ratio
+    c_pay_dist_ratio=stonum(in_ratio)
     pay_dist_ratio=paytotal/distance
     driver=driverr
 
