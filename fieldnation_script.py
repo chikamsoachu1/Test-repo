@@ -55,7 +55,7 @@ def fixedpay(pay):
 def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     c_totalpay=200
     c_payrate=stonum(in_rate)
-    c_distance=25
+    c_distance=30
     c_pay_dist_ratio=stonum(in_ratio)
     pay_dist_ratio=paytotal/distance
     driver=driverr
