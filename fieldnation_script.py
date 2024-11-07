@@ -52,19 +52,83 @@ def fixedpay(pay):
         pay = pay.replace(",", "")  # Remove commas
         return float(pay)
     return None
+def Counteroffer(link,driverr,payrate):
+    driver=driverr
+    driver.get(link)
+    try:
+        locator = (By.XPATH,f"//span[text()='Counter-offer']")
+        Request=wait_for_element_to_be_visible_special(driver, locator)
+        Request.click()
+        """
+        time.sleep(10)
+        locator = (By.XPATH,f"//span[text()='Counter-offer']")
+        Request=wait_for_element_to_be_visible_special(driver, locator)
+        Request.click()
+        
+        """
+        
+        Acknowlege_locator = (By.XPATH,f"//input[@data-nw-file='PaySection']")
+        
+        Acknowledge=wait_for_element_to_be_visible_special(driver,Acknowlege_locator) 
+        Acknowledge.click()
+
+        paytype_locator = (By.XPATH,f"//span[@data-nw-file='SelectedValueDefault']")
+        
+        paytype=wait_for_element_to_be_visible_special(driver,paytype_locator) 
+        print(paytype.text)
+
+        if paytype.text=="Hourly":
+             
+             Acknowlege_locator = driver.find_element(By.ID,"pay-base-amount").clear()
+             time.sleep(1)
+             Acknowlege_locator = driver.find_element(By.ID,"pay-base-amount").send_keys(payrate)
+            
+        elif paytype.text=="Blended":
+            time.sleep(1)
+            payunits= driver.find_element(By.ID,"pay-base-units").get_attribute("value")
+           
+            time.sleep(1)
+            Acknowlege_locator = driver.find_element(By.ID,"pay-base-amount").clear()
+            new_payrate=payrate*stonum(payunits)
+            
+            time.sleep(1)
+            Acknowlege_locator = driver.find_element(By.ID,"pay-base-amount").send_keys(new_payrate)
+            time.sleep(1)
+
+            Acknowlege_locator = driver.find_element(By.ID,"pay-additional-amount").clear()
+            Acknowlege_locator = driver.find_element(By.ID,"pay-additional-amount").send_keys(payrate)
+
+            
+
+        
+    
+        """hourss= driver.find_element(By.XPATH,f"//span[@data-nw-file='Pay']").text
+        print(hourss)
+        hourss=hourss.split("hrs")[0]
+        """
+        
+        #Acknowlege_locator = driver.find_element(By.ID,"pay-base-units").send_keys(hourss)
+        Acknowlege_locator = driver.find_element(By.ID,"counter-offer-reason").send_keys("Due to the complexity of the job I will need more compensation to complete job")
+        locator = driver.find_element(By.XPATH,f"//span[text()='Submit']").click()
+
+        
+        
+    
+
+
+    except Exception as e:
+        print(f"No Request:{e} ")
 def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     c_totalpay=200
     c_payrate=stonum(in_rate)
-    c_distance=30
+    c_distance=28
     c_pay_dist_ratio=stonum(in_ratio)
     pay_dist_ratio=paytotal/distance
     driver=driverr
-
-    if((payrate<c_payrate) or (distance>c_distance) or (pay_dist_ratio<c_pay_dist_ratio)):
-        
-        print(link)
-        print("print didnt make the cut")
-    else:
+    duration=paytotal/payrate
+    
+    ideal_pay_distance_ratio=(c_payrate*duration)/distance
+    if((payrate>=c_payrate) and (distance<=c_distance) and (pay_dist_ratio>=c_pay_dist_ratio)):
         driver.get(link)
        
         if "Routed" in link:
@@ -94,7 +158,7 @@ def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
 
             except Exception as e:
                 print(f"No Request:{e} ")
-
+        
        
         else:
 
@@ -119,6 +183,16 @@ def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
 
             except Exception as e:
                 print(f"No Request:{e} ")
+
+    elif((distance<c_distance) and ideal_pay_distance_ratio>c_pay_dist_ratio):
+        #counter offer if distance is less than  max distance and fixing the pay would make it doable
+        
+        Counteroffer(link,driver,c_payrate)
+
+    else:
+        print("didnt make the cut")
+
+  
 
 logger = logging.getLogger(__name__)
 
