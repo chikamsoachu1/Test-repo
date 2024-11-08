@@ -9,6 +9,7 @@ import threading
 import pymongo
 from selenium.webdriver.common.action_chains import ActionChains
 import re
+import urllib
 
 def stonum(value):
     try:
@@ -232,7 +233,7 @@ class FieldNationAutomation(AutomationScript):
 
         
         
-        mongo_uri = "mongodb+srv://fiverrtest1012:A5zOSyMdUT1Ay5bs@cluster0.aeo5n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        mongo_uri =  "mongodb+srv://fieldnationbot:" + urllib.parse.quote("REACH4gold@mongodb") + "@cluster0.v6yd5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         db_name = "gmail"  # Replace with your database name
         collection_name = email
         client = pymongo.MongoClient(mongo_uri)
