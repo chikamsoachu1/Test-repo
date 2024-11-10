@@ -118,7 +118,7 @@ def Counteroffer(link,driverr,payrate):
 
 
     except Exception as e:
-        print(f"No Request:{e} ")
+        print("WorkOrder Not Available For Counter-Offer")
 def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     c_totalpay=200
     c_payrate=stonum(in_rate)
@@ -129,7 +129,10 @@ def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     duration=paytotal/payrate
     
     ideal_pay_distance_ratio=(c_payrate*duration)/distance
+    WO_id=link[39:47]
+    print(f"Working on WorkOrderID:{WO_id} ")
     if((payrate>=c_payrate) and (distance<=c_distance) and (pay_dist_ratio>=c_pay_dist_ratio)):
+        print(f"Accepting WorkOrderID:{WO_id} ")
         driver.get(link)
        
         if "Routed" in link:
@@ -154,11 +157,11 @@ def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
                             Acknowledge=wait_for_element_to_be_visible_special(driver,Acknowlege_locator) 
                             Acknowledge.click()
                         except:
-                            print("no  tools ")
+                            print("Tools/Qualification Not Available For this Work Order")
 
 
             except Exception as e:
-                print(f"No Request:{e} ")
+                print("Work Order Not Available")
         
        
         else:
@@ -179,19 +182,25 @@ def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
                         Acknowledge=wait_for_element_to_be_visible_special(driver,Acknowlege_locator) 
                         Acknowledge.click()
                     except:
-                        print("no  tools ")
+                        print("Tools/Qualification Not Available For this Work Order")
 
 
             except Exception as e:
-                print(f"No Request:{e} ")
+                print("Work Order Not Available")
 
     elif((distance<c_distance) and ideal_pay_distance_ratio>c_pay_dist_ratio):
         #counter offer if distance is less than  max distance and fixing the pay would make it doable
+        print("Counter-Offering WorkOrder pay to match rate.")
         
         Counteroffer(link,driver,c_payrate)
 
     else:
-        print("didnt make the cut")
+        if(payrate<=c_payrate):
+            print("Work Order Not Accepted:Pay Less Than Rate.")
+        elif(distance>=c_distance):
+            print("Work Order Not Accepted:Distance Outside Travel Range.")
+        else:
+            print("Work Order Not Accepted:Pay to Distance Ratio not acceptable.")
 
   
 
@@ -240,13 +249,14 @@ class FieldNationAutomation(AutomationScript):
         db = client[db_name]
         collection = db[collection_name]
         self.driver.get(self.website_url)
+        counter=0
         while True:
             
             
             
             
 
-
+            
             unprocessed_links = collection.find({'used': False})
 
             for document in unprocessed_links:
@@ -268,12 +278,13 @@ class FieldNationAutomation(AutomationScript):
 
 
 
-            
-            logger.info(f"Running automation for user {self.user_id}")
-            logger.info(f"Using email: {email}")
-            
-            logger.info(f"Using rate: {rate}")
-            logger.info(f"Using ratio: {ratio}")
+            if (counter%100==0):
+                logger.info(f"Running automation for user {self.user_id}")
+                logger.info(f"Using email: {email}")
+                
+                logger.info(f"Using rate: {rate}")
+                logger.info(f"Using ratio: {ratio}")
+            counter+=1
             # Add your automation logic here, using the custom data as needed
             
             # For example:
