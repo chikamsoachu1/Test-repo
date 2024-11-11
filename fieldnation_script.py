@@ -132,7 +132,7 @@ def applytojobs(link,distance,payrate,paytotal,driverr,in_rate,in_ratio):
     
     ideal_pay_distance_ratio=(c_payrate*duration)/distance
     WO_id=link[39:47]
-    print(f"Working on WorkOrderID:{WO_id} ")
+    print(f"Working on WorkOrderID:{WO_id} " flush=True)
     if((payrate>=c_payrate) and (distance<=c_distance) and (pay_dist_ratio>=c_pay_dist_ratio)):
         print(f"Accepting WorkOrderID:{WO_id} ")
         driver.get(link)
