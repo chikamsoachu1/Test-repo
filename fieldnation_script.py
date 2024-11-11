@@ -10,6 +10,8 @@ import pymongo
 from selenium.webdriver.common.action_chains import ActionChains
 import re
 import urllib
+import sys
+sys.stdout.flush()
 
 def stonum(value):
     try:
